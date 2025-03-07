@@ -72,7 +72,7 @@ namespace SimpleRenderingExample
 	{
 	public:
 		/** Initialize the RHI for this rendering resource */
-		void InitRHI() override
+		virtual void InitRHI(FRHICommandListBase& RHICmdList)
 		{
 			TResourceArray<FTextureVertex, VERTEXBUFFER_ALIGNMENT> Vertices;
 			Vertices.SetNumUninitialized(6);
@@ -98,7 +98,7 @@ namespace SimpleRenderingExample
 
 			// Create vertex buffer. Fill buffer with initial data upon creation
 			FRHIResourceCreateInfo CreateInfo(TEXT("FRectangleVertexBuffer"),&Vertices);
-			VertexBufferRHI = RHICreateVertexBuffer(Vertices.GetResourceDataSize(), BUF_Static, CreateInfo);
+			VertexBufferRHI = RHICmdList.CreateVertexBuffer(Vertices.GetResourceDataSize(), BUF_Static, CreateInfo);
 		}
 	};
 
@@ -106,7 +106,7 @@ namespace SimpleRenderingExample
 	{
 	public:
 		/** Initialize the RHI for this rendering resource */
-		void InitRHI() override
+		virtual void InitRHI(FRHICommandListBase& RHICmdList)
 		{
 			// Indices 0 - 5 are used for rendering a quad. Indices 6 - 8 are used for triangle optimization.
 			const uint16 Indices[] = {0, 1, 2, 2, 1, 3, 0, 4, 5};
@@ -118,7 +118,7 @@ namespace SimpleRenderingExample
 
 			// Create index buffer. Fill buffer with initial data upon creation
 			FRHIResourceCreateInfo CreateInfo(TEXT("FRectangleIndexBuffer"),&IndexBuffer);
-			IndexBufferRHI = RHICreateIndexBuffer(sizeof(uint16), IndexBuffer.GetResourceDataSize(), BUF_Static, CreateInfo);
+			IndexBufferRHI = RHICmdList.CreateIndexBuffer(sizeof(uint16), IndexBuffer.GetResourceDataSize(), BUF_Static, CreateInfo);
 		}
 	};
 
@@ -126,7 +126,7 @@ namespace SimpleRenderingExample
 	{
 	public:
 		FVertexDeclarationRHIRef VertexDeclarationRHI;
-		virtual void InitRHI() override
+		virtual void InitRHI(FRHICommandListBase& RHICmdList)
 		{
 			FVertexDeclarationElementList Elements;
 			uint32 Stride = sizeof(FTextureVertex);

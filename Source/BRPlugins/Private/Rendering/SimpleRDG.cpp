@@ -9,6 +9,7 @@
 #include "RHIStaticStates.h"
 #include "ShaderParameterUtils.h"
 #include "PixelShaderUtils.h"
+#include "DataDrivenShaderPlatformInfo.h"
 
 namespace SimpleRenderingExample
 {
@@ -35,7 +36,7 @@ namespace SimpleRenderingExample
 
 		static bool ShouldCompilePermutation(const FGlobalShaderPermutationParameters &Parameters)
 		{
-			return RHISupportsComputeShaders(Parameters.Platform);
+			return FGenericDataDrivenShaderPlatformInfo::GetSupportsByteBufferComputeShaders(Parameters.Platform);
 		}
 	};
 
@@ -139,8 +140,7 @@ namespace SimpleRenderingExample
 		GraphBuilder.Execute();
 
 		//Copy Result To RenderTarget Asset
-		RHIImmCmdList.CopyTexture(PooledRenderTarget->GetRenderTargetItem().ShaderResourceTexture, RenderTargetRHI->GetTexture2D(), FRHICopyTextureInfo());
-		//RHIImmCmdList.CopyToResolveTarget(PooledRenderTarget->GetRenderTargetItem().ShaderResourceTexture, RenderTargetRHI->GetTexture2D(), FResolveParams());
+		RHIImmCmdList.CopyTexture(PooledRenderTarget->GetRHI(), RenderTargetRHI->GetTexture2D(), FRHICopyTextureInfo());
 	}
 
 	void RDGDraw(FRHICommandListImmediate &RHIImmCmdList, FTexture2DRHIRef RenderTargetRHI, FSimpleShaderParameter InParameter, const FLinearColor InColor, FTexture2DRHIRef InTexture)
@@ -215,7 +215,7 @@ namespace SimpleRenderingExample
 		GraphBuilder.Execute();
 
 		//Copy Result To RenderTarget Asset
-		RHIImmCmdList.CopyTexture(PooledRenderTarget->GetRenderTargetItem().ShaderResourceTexture, RenderTargetRHI->GetTexture2D(), FRHICopyTextureInfo());
+		RHIImmCmdList.CopyTexture(PooledRenderTarget->GetRHI(), RenderTargetRHI->GetTexture2D(), FRHICopyTextureInfo());
 	}
 } // namespace SimpleRenderingExample
 

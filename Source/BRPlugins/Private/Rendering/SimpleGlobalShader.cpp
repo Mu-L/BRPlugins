@@ -127,14 +127,16 @@ namespace SimpleRenderingExample
 
 		const ERHIFeatureLevel::Type FeatureLevel = GMaxRHIFeatureLevel;
 		TShaderMapRef<FSimpleComputeShader> ComputeShader(GetGlobalShaderMap(FeatureLevel));
-		RHIImmCmdList.SetComputeShader(RHIImmCmdList.GetBoundComputeShader());
+		SetComputePipelineState(RHIImmCmdList, ComputeShader.GetComputeShader());
 		
 		FIntPoint Size = InTexRenderTargetRHIture->GetSizeXY();
+		FRHITextureCreateDesc TextureCreateDesc = FRHITextureCreateDesc::Create2D(TEXT("GlobalShader_ComputeShader_UAV"), Size, PF_A32B32G32R32F);
+		TextureCreateDesc.SetFlags(TexCreate_ShaderResource | TexCreate_UAV);
+		TextureCreateDesc.SetNumMips(1);
+		TextureCreateDesc.SetDepth(1);
 
-		FRHIResourceCreateInfo CreateInfo(TEXT("GlobalShader_ComputeShader_UAV"));
-
-		FTexture2DRHIRef Texture = RHICreateTexture2D(Size.X, Size.Y, PF_A32B32G32R32F, 1, 1, TexCreate_ShaderResource | TexCreate_UAV, CreateInfo);
-		FUnorderedAccessViewRHIRef TextureUAV = RHICreateUnorderedAccessView(Texture);
+		FTexture2DRHIRef Texture = RHICreateTexture(TextureCreateDesc);
+		FUnorderedAccessViewRHIRef TextureUAV = RHIImmCmdList.CreateUnorderedAccessView(Texture);
 		ComputeShader->SetParameters(RHIImmCmdList, TextureUAV, InParameter);
 		DispatchComputeShader(RHIImmCmdList, ComputeShader, Size.X / 32, Size.Y / 32, 1);
 		ComputeShader->UnbindBuffers(RHIImmCmdList);
@@ -151,7 +153,7 @@ namespace SimpleRenderingExample
 	#else  
 		SCOPED_DRAW_EVENT(RHIImmCmdList, GlobalShaderDraw);
 	#endif  
-		RHIImmCmdList.TransitionResource(ERHIAccess::WritableMask, RenderTargetRHI);
+		RHIImmCmdList.Transition(FRHITransitionInfo(RenderTargetRHI, ERHIAccess::Unknown, ERHIAccess::WritableMask));
 
 		FRHIRenderPassInfo RPInfo(RenderTargetRHI, ERenderTargetActions::DontLoad_Store, RenderTargetRHI);
 		RHIImmCmdList.BeginRenderPass(RPInfo, TEXT("SimplePixelShaderPass"));
@@ -163,7 +165,7 @@ namespace SimpleRenderingExample
 		TShaderMapRef<FSimplePixelShader> PixelShader(GlobalShaderMap);
 
 		FTextureVertexDeclaration VertexDeclaration;
-		VertexDeclaration.InitRHI();
+		VertexDeclaration.InitRHI(RHIImmCmdList);
 
 		// Set the graphic pipeline state.
 		FGraphicsPipelineStateInitializer GraphicsPSOInit;
